@@ -16,7 +16,7 @@ object Main extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     for {
       events <- IO.pure(TrieMap.empty[String, Unit])
-      _      <- (scanLiveEventsAndRunTracking(events) *> IO.sleep(3.minutes)).foreverM
+      _      <- (scanLiveEventsAndRunTracking(events).start *> IO.sleep(3.minutes)).foreverM
     } yield ExitCode.Success
 
   def scanLiveEventsAndRunTracking(trackedLiveEventUrls: collection.concurrent.Map[String, Unit]): IO[Unit] = for {
