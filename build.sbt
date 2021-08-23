@@ -13,6 +13,8 @@ lazy val root = project
   
       "org.typelevel"                     %% "cats-core"            % "2.6.1",
       "org.typelevel"                     %% "cats-effect"          % "3.2.3",
+      "co.fs2"                            %% "fs2-core"             % "3.1.0",
+      "co.fs2"                            %% "fs2-io"               % "3.1.0",
 
       "ch.qos.logback"                    % "logback-classic"       % "1.2.5",
     ).map(_ withSources() withJavadoc())

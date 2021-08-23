@@ -24,6 +24,7 @@ object Main extends IOApp {
     liveUrls          <- getLiveEventsUrls(driverMainPage)
     _                 <- IO(driverMainPage.quit())
     urlsNotTrackedYet <- IO((liveUrls diff trackedLiveEventUrls.keySet).toSeq)
+    _                 <- IO((trackedLiveEventUrls.keySet diff liveUrls).map(trackedLiveEventUrls.remove(_, ())))
     driversMatches    <- urlsNotTrackedYet.map(setupDriver(_, "div[data-id=heading-bar-title]")).toList.parSequence
     _                 <- driversMatches.zip(urlsNotTrackedYet)
       .map { case (driver, url) => trackLiveEventCoefs(driver, url, trackedLiveEventUrls) }.parSequence
@@ -52,10 +53,25 @@ object Main extends IOApp {
       .flatMap(_.findElements(By.cssSelector("a[data-id=event-card-container-event]")).asScala.map(_.getAttribute("href")))
   }
 
-  def trackLiveEventCoefs(driver: RemoteWebDriver, url: String, trackingEvents: collection.concurrent.Map[String, Unit]): IO[Unit] = IO {
-    trackingEvents.putIfAbsent(url, ())
-    //todo implement data fetching
-    driver.quit()
-    trackingEvents.remove(url, ())
+  def trackLiveEventCoefs(driver: RemoteWebDriver, url: String, trackingEvents: collection.concurrent.Map[String, Unit]): IO[Unit] = {
+    IO(trackingEvents.putIfAbsent(url, ())) *> {
+      for {
+        matchEndWaiter <- IO.deferred[Either[Throwable, Unit]]
+        _ <- fs2.Stream.awakeEvery[IO](1.second).interruptWhen(matchEndWaiter)
+          .foreach { _ =>
+            logCurrentCoefs(driver).start *> IO.defer {
+              if (!trackingEvents.keySet.contains(url)) matchEndWaiter.complete(Right(())) *> IO.unit
+              else IO.unit
+            }
+          }
+          .compile.drain
+        _ <- IO(driver.quit())
+      } yield ()
+    }
+  }
+
+  def logCurrentCoefs(driver: RemoteWebDriver): IO[Unit] = IO {
+
+    //todo add coefs info fetching
   }
 }
