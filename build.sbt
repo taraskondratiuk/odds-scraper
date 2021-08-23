@@ -11,6 +11,9 @@ lazy val root = project
       "org.jsoup"                         % "jsoup"                 % "1.14.2",
       "io.github.bonigarcia"              % "webdrivermanager"      % "4.4.3",
   
+      "org.typelevel"                     %% "cats-core"            % "2.6.1",
+      "org.typelevel"                     %% "cats-effect"          % "3.2.3",
+
       "ch.qos.logback"                    % "logback-classic"       % "1.2.5",
-    )
+    ).map(_ withSources() withJavadoc())
   )
