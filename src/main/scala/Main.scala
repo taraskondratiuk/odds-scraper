@@ -6,12 +6,15 @@ import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.WebDriverWait
 import org.openqa.selenium.{By, Cookie, WebDriver}
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters.*
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration.DurationInt
 
 object Main extends IOApp {
+
+  val LOG = LoggerFactory.getLogger("Scraper")
 
   override def run(args: List[String]): IO[ExitCode] =
     for {
