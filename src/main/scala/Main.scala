@@ -60,6 +60,7 @@ object Main extends IOApp {
     IO(trackingEvents.putIfAbsent(url, ())) *> {
       for {
         matchEndWaiter <- IO.deferred[Either[Throwable, Unit]]
+        _ <- expandCoefs(driver)
         _ <- fs2.Stream.awakeEvery[IO](1.second).interruptWhen(matchEndWaiter)
           .foreach { _ =>
             logCurrentCoefs(driver).start *> IO.defer {
@@ -71,6 +72,11 @@ object Main extends IOApp {
         _ <- IO(driver.quit())
       } yield ()
     }
+  }
+
+  def expandCoefs(driver: RemoteWebDriver): IO[Unit] = IO {
+    driver.findElement(By.cssSelector("div[data-id=event-markets-tab-all]")).click()
+    driver.findElements(By.cssSelector("div[data-id^=market-expansion-panel-header]")).asScala.map(_.click())
   }
 
   def logCurrentCoefs(driver: RemoteWebDriver): IO[Unit] = IO {
