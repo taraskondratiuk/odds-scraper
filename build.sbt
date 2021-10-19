@@ -4,18 +4,18 @@ lazy val root = project
     name := "pm-scraper",
     version := "0.1.0",
 
-    scalaVersion := "3.0.1",
+    scalaVersion := "3.1.0",
 
     libraryDependencies ++= Seq(
       "org.seleniumhq.selenium"           % "selenium-java"         % "3.141.59",
-      "org.jsoup"                         % "jsoup"                 % "1.14.2",
-      "io.github.bonigarcia"              % "webdrivermanager"      % "4.4.3",
+      "org.jsoup"                         % "jsoup"                 % "1.14.3",
+      "io.github.bonigarcia"              % "webdrivermanager"      % "5.0.2",
   
       "org.typelevel"                     %% "cats-core"            % "2.6.1",
-      "org.typelevel"                     %% "cats-effect"          % "3.2.3",
-      "co.fs2"                            %% "fs2-core"             % "3.1.0",
-      "co.fs2"                            %% "fs2-io"               % "3.1.0",
+      "org.typelevel"                     %% "cats-effect"          % "3.2.9",
+      "co.fs2"                            %% "fs2-core"             % "3.1.6",
+      "co.fs2"                            %% "fs2-io"               % "3.1.6",
 
-      "ch.qos.logback"                    % "logback-classic"       % "1.2.5",
+      "ch.qos.logback"                    % "logback-classic"       % "1.2.6",
     ).map(_ withSources() withJavadoc())
   )

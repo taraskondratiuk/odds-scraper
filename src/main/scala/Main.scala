@@ -76,7 +76,11 @@ object Main extends IOApp {
 
   def expandCoefs(driver: RemoteWebDriver): IO[Unit] = IO {
     driver.findElement(By.cssSelector("div[data-id=event-markets-tab-all]")).click()
-    driver.findElements(By.cssSelector("div[data-id^=market-expansion-panel-header]")).asScala.map(_.click())
+    driver
+      .findElements(By.cssSelector("svg"))
+      .asScala
+      .filter(svg => svg.findElements(By.cssSelector("use")).asScala.filter(_.getAttribute("xlink:href") == "#UII_ExpandMore").nonEmpty)
+      .foreach(_.click())
   }
 
   def logCurrentCoefs(driver: RemoteWebDriver): IO[Unit] = IO {
