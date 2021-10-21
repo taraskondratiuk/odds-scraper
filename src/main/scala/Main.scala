@@ -1,6 +1,9 @@
-import cats.effect.*
+import cats.effect.{IO, IOApp, ExitCode}
 import cats.implicits.*
+import io.circe.generic.auto.*
+import io.circe.syntax.*
 import io.github.bonigarcia.wdm.WebDriverManager
+import org.jsoup.Jsoup
 import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -63,7 +66,7 @@ object Main extends IOApp {
         _ <- expandCoefs(driver)
         _ <- fs2.Stream.awakeEvery[IO](1.second).interruptWhen(matchEndWaiter)
           .foreach { _ =>
-            logCurrentCoefs(driver).start *> IO.defer {
+            logCurrentCoefs(driver).handleError(e => LOG.warn("error on coefs fetching: ", e)).start *> IO.defer {
               if (!trackingEvents.keySet.contains(url)) matchEndWaiter.complete(Right(())) *> IO.unit
               else IO.unit
             }
@@ -84,7 +87,56 @@ object Main extends IOApp {
   }
 
   def logCurrentCoefs(driver: RemoteWebDriver): IO[Unit] = IO {
+    val fullPage = Jsoup.parse(driver.findElement(By.ById("root")).getAttribute("innerHTML"))
 
-    //todo add coefs info fetching
+    val title = fullPage.selectFirst("div[data-id=heading-bar-title]").text()
+    val (discipline, tournament) = title.splitAt(title.indexOf(". "))
+
+    val competitor1 = fullPage.selectFirst("div[data-id=competitor-home]").text()
+    val competitor2 = fullPage.selectFirst("div[data-id=competitor-away]").text()
+
+
+    val scores = fullPage
+      .selectFirst("div[data-id=competitor-home]")
+      .parent()
+      .nextElementSibling()
+      .children()
+      .asScala
+      .toSeq
+      .map { mapScoreEl =>
+        val (map :: score1 :: score2 :: _) = mapScoreEl.children().asScala.toList.map(_.text())
+        Score(map, score1, score2)
+      }
+    val pageBets = fullPage
+      .selectFirst("div[data-id=event-market-tabs-carousel]")
+      .siblingElements()
+      .asScala
+      .drop(1)
+      .takeWhile(_.child(0).attr("data-id") != "footer-wrapper")
+      .toSeq
+      .map { el =>
+        val betName = el
+          .selectFirst("div[data-id^=market-expansion-panel-header]")
+          .attr("data-id")
+          .replace("market-expansion-panel-header-", "")
+        val outcomes = el
+          .select("div[data-id=outcome]")
+          .asScala
+          .toSeq
+          .map { outcome =>
+            val nameInitial = outcome.child(0).text()
+            val name = if (betName.toLowerCase.contains("total") && !betName.toLowerCase.contains("even")) {
+              val totalNum = outcome.siblingElements().get(0).text()
+              val overOrUnder = if (outcome == outcome.parent().child(1)) "over" else "under"
+              s"$betName $overOrUnder $totalNum"
+            } else nameInitial
+
+             val coef = outcome.selectFirst("span").text().toFloat
+             Outcome(name, coef)
+          }
+        Bet(betName, outcomes)
+      }
+
+    LOG.info(Event(discipline, tournament.replace(". ", ""), competitor1, competitor2, pageBets, scores).asJson.noSpaces)
   }
 }

@@ -16,6 +16,8 @@ lazy val root = project
       "co.fs2"                            %% "fs2-core"             % "3.1.6",
       "co.fs2"                            %% "fs2-io"               % "3.1.6",
 
+      "io.circe"                          %% "circe-generic"        % "0.14.1",
+
       "ch.qos.logback"                    % "logback-classic"       % "1.2.6",
     ).map(_ withSources() withJavadoc())
   )
