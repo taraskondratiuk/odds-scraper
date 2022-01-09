@@ -1,4 +1,4 @@
-import cats.effect.{IO, IOApp, ExitCode}
+import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits.*
 import io.circe.generic.auto.*
 import io.circe.syntax.*
@@ -22,7 +22,7 @@ object Main extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     for {
       events <- IO.pure(TrieMap.empty[String, Unit])
-      _      <- (scanLiveEventsAndRunTracking(events).start *> IO.sleep(3.minutes)).foreverM
+      _      <- (scanLiveEventsAndRunTracking(events).handleError(e => LOG.error("error on events scanning: ", e)).start *> IO.sleep(3.minutes)).foreverM
     } yield ExitCode.Success
 
   def scanLiveEventsAndRunTracking(trackedLiveEventUrls: collection.concurrent.Map[String, Unit]): IO[Unit] = for {
@@ -40,7 +40,7 @@ object Main extends IOApp {
     WebDriverManager.chromedriver().setup()
 
     val chromeOptions = new ChromeOptions
-//    chromeOptions.addArguments("--headless")
+    chromeOptions.addArguments("--headless")
     chromeOptions.addArguments("--disable-dev-shm-usage") // overcome limited resource problems
     chromeOptions.addArguments("--no-sandbox")
 
