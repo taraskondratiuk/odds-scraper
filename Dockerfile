@@ -8,4 +8,6 @@ ENV LOG_FILES_DIR /pm-scraper-logs
 
 WORKDIR /pm-scraper
 
-RUN sbt run
+RUN sbt compile
+
+CMD ["sbt", "run"]
