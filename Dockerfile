@@ -9,7 +9,7 @@ ADD . /pm-scraper/
 WORKDIR /pm-scraper
 
 RUN apt-get update && \
-    apt-get --assume-yes install chromium-browser
+    apt-get --assume-yes install chromium
 
 RUN rm src/main/resources/chromium_93.0.4577.82-1_arm64.deb
 
