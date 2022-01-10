@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class SeleniumSpec extends AnyFlatSpec {
 
   "Selenium" should "run Chrome" in {
-    WebDriverManager.chromedriver().setup()
+    System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver")
 
     val chromeOptions = new ChromeOptions
     chromeOptions.addArguments("--headless")

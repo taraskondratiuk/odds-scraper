@@ -5,3 +5,4 @@ target
 .metals
 .bloop
 LOG_FILES_DIR_IS_UNDEFINED
+*.deb
