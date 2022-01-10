@@ -36,10 +36,10 @@ object Main extends IOApp {
   } yield ()
 
   def setupDriver(url: String, readinessCssSelector: String): IO[RemoteWebDriver] = IO {
-    System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver")
+    System.setProperty("webdriver.chrome.driver", sys.env("CHROMEDRIVER"))
 
     val chromeOptions = new ChromeOptions
-    chromeOptions.setBinary("/usr/bin/chromium")
+    chromeOptions.setBinary(sys.env("CHROME_BINARY"))
     chromeOptions.addArguments("--headless")
     chromeOptions.addArguments("--disable-dev-shm-usage") // overcome limited resource problems
     chromeOptions.addArguments("--no-sandbox")

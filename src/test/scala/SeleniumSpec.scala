@@ -5,10 +5,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 class SeleniumSpec extends AnyFlatSpec {
 
   "Selenium" should "run Chrome" in {
-    System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver")
+    System.setProperty("webdriver.chrome.driver", sys.env("CHROMEDRIVER"))
 
     val chromeOptions = new ChromeOptions
-    chromeOptions.setBinary("/usr/bin/chromium")
+    chromeOptions.setBinary(sys.env("CHROME_BINARY"))
     chromeOptions.addArguments("--headless")
     chromeOptions.addArguments("--disable-dev-shm-usage") // overcome limited resource problems
     chromeOptions.addArguments("--no-sandbox")
