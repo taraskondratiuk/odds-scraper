@@ -36,7 +36,7 @@ object Main extends IOApp {
   } yield ()
 
   def setupDriver(url: String, readinessCssSelector: String): IO[RemoteWebDriver] = IO {
-    WebDriverManager.chromedriver().setup()
+    WebDriverManager.chromiumdriver().setup()
 
     val chromeOptions = new ChromeOptions
     chromeOptions.addArguments("--headless")

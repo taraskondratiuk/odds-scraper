@@ -11,8 +11,6 @@ WORKDIR /pm-scraper
 RUN apt-get update && \
     apt-get --assume-yes install chromium
 
-RUN mv /usr/bin/chromium /usr/bin/google-chrome-stable
-
 RUN sbt compile
 
 RUN sbt test
