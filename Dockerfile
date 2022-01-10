@@ -12,8 +12,6 @@ RUN apt-get update && \
     apt-get --assume-yes install chromium && \
     apt-get --assume-yes install chromium-driver
 
-RUN mv /usr/bin/chromium /usr/bin/google-chrome-stable
-
 RUN sbt compile
 
 RUN sbt test

@@ -39,6 +39,7 @@ object Main extends IOApp {
     System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver")
 
     val chromeOptions = new ChromeOptions
+    chromeOptions.setBinary("/usr/bin/chromium")
     chromeOptions.addArguments("--headless")
     chromeOptions.addArguments("--disable-dev-shm-usage") // overcome limited resource problems
     chromeOptions.addArguments("--no-sandbox")
