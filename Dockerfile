@@ -10,6 +10,7 @@ WORKDIR /pm-scraper
 
 RUN apt-get update && \
     apt-get --assume-yes install libavcodec58 && \
+    apt-get --assume-yes install libavformat58 && \
     apt-get install -f -y ./src/main/resources/chromium_93.0.4577.82-1_arm64.deb
 
 RUN rm src/main/resources/chromium_93.0.4577.82-1_arm64.deb
