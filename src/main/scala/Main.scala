@@ -36,6 +36,8 @@ object Main extends IOApp {
 
   def setupDriver(url: String, readinessCssSelector: String): IO[RemoteWebDriver] = IO {
     System.setProperty("webdriver.chrome.driver", sys.env("CHROMEDRIVER"))
+    System.setProperty("webdriver.chrome.whitelistedIps", "")
+    System.setProperty("webdriver.chrome.verboseLogging", "true")
 
     val chromeOptions = new ChromeOptions
     chromeOptions.setBinary(sys.env("CHROME_BINARY"))
