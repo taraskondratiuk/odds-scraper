@@ -13,7 +13,15 @@
         </encoder>
     </appender>
 
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <encoder>
+            <pattern>%d %-5level [%thread] %logger{0} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <root level="INFO">
         <appender-ref ref="FILE" />
+        <appender-ref ref="CONSOLE" />
     </root>
 </configuration>
