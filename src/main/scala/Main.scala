@@ -2,7 +2,6 @@ import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits.*
 import io.circe.generic.auto.*
 import io.circe.syntax.*
-import io.github.bonigarcia.wdm.WebDriverManager
 import org.jsoup.Jsoup
 import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
 import org.openqa.selenium.remote.RemoteWebDriver
