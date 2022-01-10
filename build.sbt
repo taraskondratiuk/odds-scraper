@@ -13,7 +13,6 @@ lazy val root = project
     libraryDependencies ++= Seq(
       "org.seleniumhq.selenium"           % "selenium-java"         % "3.141.59",
       "org.jsoup"                         % "jsoup"                 % "1.14.3",
-      "io.github.bonigarcia"              % "webdrivermanager"      % "5.0.2",
   
       "org.typelevel"                     %% "cats-core"            % "2.7.0",
       "org.typelevel"                     %% "cats-effect"          % "3.3.0",
