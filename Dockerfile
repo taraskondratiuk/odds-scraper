@@ -8,7 +8,9 @@ ADD . /pm-scraper/
 
 WORKDIR /pm-scraper
 
-RUN apt-get update && apt-get install -f -y ./src/main/resources/chromium_93.0.4577.82-1_arm64.deb
+RUN apt-get update && \
+    apt-get install libavcodec58 && \
+    apt-get install -f -y ./src/main/resources/chromium_93.0.4577.82-1_arm64.deb
 
 RUN rm src/main/resources/chromium_93.0.4577.82-1_arm64.deb
 
