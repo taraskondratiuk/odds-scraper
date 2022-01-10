@@ -6,6 +6,10 @@ lazy val root = project
 
     scalaVersion := "3.1.0",
 
+    scalacOptions ++= Seq(
+      "-Xfatal-warnings",
+    ),
+
     libraryDependencies ++= Seq(
       "org.seleniumhq.selenium"           % "selenium-java"         % "3.141.59",
       "org.jsoup"                         % "jsoup"                 % "1.14.3",
@@ -19,5 +23,7 @@ lazy val root = project
       "io.circe"                          %% "circe-generic"        % "0.14.1",
 
       "ch.qos.logback"                    % "logback-classic"       % "1.2.10",
-    ).map(_ withSources() withJavadoc())
+
+      "org.scalatest"                     %% "scalatest"            % "3.2.10" % Test,
+    ).map(_ withSources())
   )
