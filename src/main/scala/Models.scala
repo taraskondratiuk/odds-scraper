@@ -1,4 +1,5 @@
 case class Event(
+                  sportName: String,
                   discipline: String,
                   tournament: String, 
                   competitor1: String, 
