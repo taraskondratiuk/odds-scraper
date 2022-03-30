@@ -1,4 +1,4 @@
-FROM hseeberger/scala-sbt:8u312_1.6.1_3.1.0
+FROM hseeberger/scala-sbt:8u312_1.6.2_3.1.1
 
 RUN mkdir pm-scraper-logs
 

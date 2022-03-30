@@ -7,29 +7,40 @@ import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.WebDriverWait
 import org.openqa.selenium.{By, Cookie, WebDriver}
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.JavaConverters.*
+import java.time.Duration
+import scala.jdk.CollectionConverters.*
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration.DurationInt
 
 object Main extends IOApp {
 
-  val LOG = LoggerFactory.getLogger("Scraper")
+  val LOG: Logger = LoggerFactory.getLogger("Scraper")
 
-  override def run(args: List[String]): IO[ExitCode] =
+  type ParMap[K, V] = collection.concurrent.Map[K, V]
+
+  override def run(args: List[String]): IO[ExitCode] = {
     for {
       events <- IO.pure(TrieMap.empty[String, Unit])
-      _      <- (scanLiveEventsAndRunTracking(events).handleError(e => LOG.error("error on events scanning: ", e)).start *> IO.sleep(3.minutes)).foreverM
+      _      <- {
+        scanLiveEventsAndRunTracking(events).handleError(e => LOG.error("error on events scanning: ", e)).start
+          *> IO.sleep(3.minutes)
+      }.foreverM
     } yield ExitCode.Success
+  }
 
-  def scanLiveEventsAndRunTracking(trackedLiveEventUrls: collection.concurrent.Map[String, Unit]): IO[Unit] = for {
-    driverMainPage    <- setupDriver("https://parimatch.com/en/e-sports/live", "a[data-id=event-card-container-event]")
+  def scanLiveEventsAndRunTracking(trackedLiveEventUrls: ParMap[String, Unit]): IO[Unit] = for {
+    driverMainPage    <- setupDriver(
+      "https://parimatch.com/en/e-sports/live",
+      "a[data-id=event-card-container-event]",
+    )
     liveUrls          <- getLiveEventsUrls(driverMainPage)
     _                 <- IO(driverMainPage.quit())
     urlsNotTrackedYet <- IO((liveUrls diff trackedLiveEventUrls.keySet).toSeq)
     _                 <- IO((trackedLiveEventUrls.keySet diff liveUrls).map(trackedLiveEventUrls.remove(_, ())))
-    driversMatches    <- urlsNotTrackedYet.map(setupDriver(_, "div[data-id=heading-bar-title]")).toList.parSequence
+    driversMatches    <- urlsNotTrackedYet
+      .map(setupDriver(_, "div[data-id=heading-bar-title]")).toList.parSequence
     _                 <- driversMatches.zip(urlsNotTrackedYet)
       .map { case (driver, url) => trackLiveEventCoefs(driver, url, trackedLiveEventUrls) }.parSequence
   } yield ()
@@ -48,19 +59,22 @@ object Main extends IOApp {
     val driver = new ChromeDriver(chromeOptions)
     driver.get(url)
     driver.manage().addCookie(new Cookie("gravitecOptInBlocked", "true")) // disable notifications popup
-    new WebDriverWait(driver, 30).until(_.findElement(By.cssSelector(readinessCssSelector)))
+    new WebDriverWait(driver, Duration.ofSeconds(30)).until(_.findElement(By.cssSelector(readinessCssSelector)))
 
     driver
   }
 
   def getLiveEventsUrls(driver: RemoteWebDriver): IO[Set[String]] = IO {
     driver
-      .findElementsByCssSelector("div[data-id=live-event-list]")
+      .findElements(By.cssSelector("div[data-id=live-event-list]"))
       .asScala.toSet
-      .flatMap(_.findElements(By.cssSelector("a[data-id=event-card-container-event]")).asScala.map(_.getAttribute("href")))
+      .flatMap(_.findElements(By.cssSelector("a[data-id=event-card-container-event]"))
+        .asScala
+        .map(_.getAttribute("href"))
+      )
   }
 
-  def trackLiveEventCoefs(driver: RemoteWebDriver, url: String, trackingEvents: collection.concurrent.Map[String, Unit]): IO[Unit] = {
+  def trackLiveEventCoefs(driver: RemoteWebDriver, url: String, trackingEvents: ParMap[String, Unit]): IO[Unit] = {
     IO(trackingEvents.putIfAbsent(url, ())) *> {
       for {
         matchEndWaiter <- IO.deferred[Either[Throwable, Unit]]
@@ -83,7 +97,11 @@ object Main extends IOApp {
     driver
       .findElements(By.cssSelector("svg"))
       .asScala
-      .filter(svg => svg.findElements(By.cssSelector("use")).asScala.filter(_.getAttribute("xlink:href") == "#UII_ExpandMore").nonEmpty)
+      .filter(svg => svg
+        .findElements(By.cssSelector("use"))
+        .asScala
+        .exists(_.getAttribute("xlink:href") == "#UII_ExpandMore")
+      )
       .foreach(_.click())
   }
 
@@ -105,7 +123,7 @@ object Main extends IOApp {
       .asScala
       .toSeq
       .map { mapScoreEl =>
-        val (map :: score1 :: score2 :: _) = mapScoreEl.children().asScala.toList.map(_.text())
+        val map :: score1 :: score2 :: _ = mapScoreEl.children().asScala.toList.map(_.text())
         Score(map, score1, score2)
       }
 
@@ -142,6 +160,13 @@ object Main extends IOApp {
         }
     }
 
-    LOG.info(Event(discipline, tournament.replace(". ", ""), competitor1, competitor2, pageBets, scores).asJson.noSpaces)
+    LOG.info(Event(
+      discipline,
+      tournament.replace(". ", ""),
+      competitor1,
+      competitor2,
+      pageBets,
+      scores,
+    ).asJson.noSpaces)
   }
 }
