@@ -47,8 +47,6 @@ object Main extends IOApp {
 
   def setupDriver(url: String, readinessCssSelector: String): IO[RemoteWebDriver] = IO {
     System.setProperty("webdriver.chrome.driver", sys.env("CHROMEDRIVER"))
-    System.setProperty("webdriver.chrome.whitelistedIps", "")
-    System.setProperty("webdriver.chrome.verboseLogging", "true")
 
     val chromeOptions = new ChromeOptions
     chromeOptions.setBinary(sys.env("CHROME_BINARY"))
@@ -66,12 +64,10 @@ object Main extends IOApp {
 
   def getLiveEventsUrls(driver: RemoteWebDriver): IO[Set[String]] = IO {
     driver
-      .findElements(By.cssSelector("div[data-id=live-event-list]"))
-      .asScala.toSet
-      .flatMap(_.findElements(By.cssSelector("a[data-id=event-card-container-event]"))
+      .findElements(By.cssSelector("a[data-id=event-card-container-event]"))
         .asScala
+        .toSet
         .map(_.getAttribute("href"))
-      )
   }
 
   def trackLiveEventCoefs(driver: RemoteWebDriver, url: String, trackingEvents: ParMap[String, Unit]): IO[Unit] = {
