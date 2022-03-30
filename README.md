@@ -9,3 +9,5 @@ need to set env vars
 `CHROME_BINARY=<path to chrome binary or chrome.exe>`
 
 `CHROMEDRIVER=<path to chromedriver>`
+
+`HEADLESS=false`(optional, true by default)

@@ -50,7 +50,9 @@ object Main extends IOApp {
 
     val chromeOptions = new ChromeOptions
     chromeOptions.setBinary(sys.env("CHROME_BINARY"))
-    chromeOptions.addArguments("--headless")
+    if (sys.env.get("HEADLESS").flatMap(_.toBooleanOption).getOrElse(true)) {
+      chromeOptions.addArguments("--headless")
+    }
     chromeOptions.addArguments("--disable-dev-shm-usage") // overcome limited resource problems
     chromeOptions.addArguments("--no-sandbox")
 
@@ -58,6 +60,7 @@ object Main extends IOApp {
     driver.get(url)
     driver.manage().addCookie(new Cookie("gravitecOptInBlocked", "true")) // disable notifications popup
     new WebDriverWait(driver, Duration.ofSeconds(30)).until(_.findElement(By.cssSelector(readinessCssSelector)))
+    new WebDriverWait(driver, Duration.ofSeconds(5))
 
     driver
   }
@@ -110,7 +113,6 @@ object Main extends IOApp {
     val competitor1 = fullPage.selectFirst("div[data-id=competitor-home]").text()
     val competitor2 = fullPage.selectFirst("div[data-id=competitor-away]").text()
 
-
     val scores = fullPage
       .selectFirst("div[data-id=competitor-home]")
       .parent()
@@ -129,30 +131,34 @@ object Main extends IOApp {
       page
         .siblingElements()
         .asScala
-        .drop(1)
-        .takeWhile(_.child(0).attr("data-id") != "footer-wrapper")
         .toSeq
-        .map { el =>
-          val betName = el
-            .selectFirst("div[data-id^=market-expansion-panel-header]")
-            .attr("data-id")
-            .replace("market-expansion-panel-header-", "")
-          val outcomes = el
-            .select("div[data-id=outcome]")
-            .asScala
-            .toSeq
-            .map { outcome =>
-              val nameInitial = outcome.child(0).text()
-              val name = if (betName.toLowerCase.contains("total") && !betName.toLowerCase.contains("even")) {
-                val totalNum = outcome.siblingElements().get(0).text()
-                val overOrUnder = if (outcome == outcome.parent().child(1)) "over" else "under"
-                s"$betName $overOrUnder $totalNum"
-              } else nameInitial
-
-              val coef = outcome.selectFirst("span").text().toFloat
-              Outcome(name, coef)
+        .flatMap { el =>
+          for {
+            betName <- {
+              el
+                .select("div[data-id^=market-expansion-panel-header]")
+                .asScala
+                .headOption
+                .map(_.attr("data-id").replace("market-expansion-panel-header-", ""))
             }
-          Bet(betName, outcomes)
+            outcomes <- Some {
+              el
+                .select("div[data-id=outcome]")
+                .asScala
+                .toSeq
+                .map { outcome =>
+                  val nameInitial = outcome.child(0).text()
+                  val name = if (betName.toLowerCase.contains("total") && !betName.toLowerCase.contains("even")) {
+                    val totalNum = outcome.siblingElements().get(0).text()
+                    val overOrUnder = if (outcome == outcome.parent().child(1)) "over" else "under"
+                    s"$betName $overOrUnder $totalNum"
+                  } else nameInitial
+
+                  val coef = outcome.selectFirst("span").text().toFloat
+                  Outcome(name, coef)
+                }
+            }
+          } yield Bet(betName, outcomes)
         }
     }
 
