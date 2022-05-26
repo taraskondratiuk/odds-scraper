@@ -118,7 +118,7 @@ object Main extends IOApp {
     val fullPage = Jsoup.parse(driver.findElement(By.ById("root")).getAttribute("innerHTML"))
 
     val title = fullPage.selectFirst("div[data-id=heading-bar-title]").text()
-    val (discipline, tournament) = title.splitAt(title.lastIndexOf(". "))
+    val (discipline, tournament) = title.splitAt(title.indexOf(". "))
 
     val competitor1 = fullPage.selectFirst("div[data-id*=competitor-home]").text()
     val competitor2 = fullPage.selectFirst("div[data-id*=competitor-away]").text()
