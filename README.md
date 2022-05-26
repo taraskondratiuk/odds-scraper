@@ -15,3 +15,5 @@ need to set env vars
 `CHROMEDRIVER=<path to chromedriver>`
 
 `HEADLESS=false`(optional, true by default)
+
+`SPORTS=<comma separated sports>`
