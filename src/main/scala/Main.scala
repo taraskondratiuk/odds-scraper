@@ -13,6 +13,7 @@ import java.time.Duration
 import scala.jdk.CollectionConverters.*
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration.DurationInt
+import scala.util.Try
 
 object Main extends IOApp {
 
@@ -102,7 +103,12 @@ object Main extends IOApp {
   }
 
   def expandCoefs(driver: RemoteWebDriver): IO[Unit] = IO {
-    driver.findElement(By.cssSelector("div[data-id=event-markets-tab-all]")).click()
+    driver
+      .findElements(By.cssSelector("button"))
+      .asScala
+      .find(button => button.findElements(By.cssSelector("span")).asScala.headOption.exists(el => el.getText == "OK"))
+      .foreach(_.click())
+    driver.findElement(By.cssSelector("div[data-id=event-markets-tab-0]")).click()
     driver
       .findElements(By.cssSelector("svg"))
       .asScala
@@ -123,18 +129,30 @@ object Main extends IOApp {
     val competitor1 = fullPage.selectFirst("div[data-id*=competitor-home]").text()
     val competitor2 = fullPage.selectFirst("div[data-id*=competitor-away]").text()
 
-    val scores = fullPage
-      .selectFirst("div[data-id*=competitor-home]")
-      .parent()
-      .nextElementSibling()
-      .children()
-      .asScala
-      .toSeq
-      .map { mapScoreEl =>
-        val map :: score1 :: score2 :: _ = mapScoreEl.children().asScala.toList.map(_.text())
-        Score(map, score1, score2)
-      }
-
+    val scores = Try {
+      fullPage
+        .selectFirst("div[data-id*=competitor-home]")
+        .parent()
+        .nextElementSibling()
+        .children()
+        .asScala
+        .toSeq
+        .map { mapScoreEl =>
+          val map :: score1 :: score2 :: _ = mapScoreEl.children().asScala.toList.map(_.text())
+          Score(map, score1, score2)
+        }
+    }.orElse(Try{
+      val map :: score1 :: score2 :: _ = fullPage
+        .selectFirst("div[data-id*=competitor-home]")
+        .parent()
+        .parent()
+        .nextElementSibling()
+        .children()
+        .asScala
+        .toList
+        .map(_.text())
+      Seq(Score(map, score1, score2))
+    }).get
     val maybePageBetsEl = Option(fullPage.selectFirst("div[data-id=event-market-tabs-carousel]"))
 
     val pageBets = maybePageBetsEl.fold(Seq.empty[Bet]) { page =>
