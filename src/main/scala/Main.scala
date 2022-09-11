@@ -138,11 +138,15 @@ object Main extends IOApp {
         .asScala
         .toSeq
         .map { mapScoreEl =>
-          val map :: score1 :: score2 :: _ = mapScoreEl.children().asScala.toList.map(_.text())
-          Score(map, score1, score2)
+          mapScoreEl.children().asScala.toList.map(_.text()) match {
+            case map :: score1 :: score2 :: _ =>
+              Score(map, score1, score2)
+            case r                            =>
+              throw new Exception(s"match error 1 for scores fetch, failed to parse: $r")
+          }
         }
-    }.orElse(Try{
-      val map :: score1 :: score2 :: _ = fullPage
+    }.orElse(Try {
+      fullPage
         .selectFirst("div[data-id*=competitor-home]")
         .parent()
         .parent()
@@ -150,8 +154,12 @@ object Main extends IOApp {
         .children()
         .asScala
         .toList
-        .map(_.text())
-      Seq(Score(map, score1, score2))
+        .map(_.text()) match {
+          case map :: score1 :: score2 :: _ =>
+            Seq(Score(map, score1, score2))
+          case r                            =>
+            throw new Exception(s"match error 2 for scores fetch, failed to parse: $r")
+        }
     }).get
     val maybePageBetsEl = Option(fullPage.selectFirst("div[data-id=event-market-tabs-carousel]"))
 
