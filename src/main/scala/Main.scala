@@ -36,7 +36,7 @@ object Main extends IOApp {
   def scanLiveEventsAndRunTracking(trackedLiveEventUrls: ParMap[String, Unit], sportName: String): IO[Unit] = for {
     driverMainPage    <- setupDriver(
       s"https://parimatch.com/en/$sportName/live",
-      "a[data-id=event-card-container-event]",
+      "div[data-id=event-card-container-event]",
     )
     liveUrls          <- getLiveEventsUrls(driverMainPage)
     _                 <- IO(driverMainPage.quit())
@@ -72,10 +72,11 @@ object Main extends IOApp {
 
   def getLiveEventsUrls(driver: RemoteWebDriver): IO[Set[String]] = IO {
     driver
-      .findElements(By.cssSelector("a[data-id=event-card-container-event]"))
-        .asScala
-        .toSet
-        .map(_.getAttribute("href"))
+      .findElements(By.cssSelector("div[data-id=event-card-container-event]"))
+      .asScala
+      .map(_.findElement(By.cssSelector("a")))
+      .toSet
+      .map(_.getAttribute("href"))
   }
 
   def trackLiveEventCoefs(driver: RemoteWebDriver,
@@ -126,41 +127,24 @@ object Main extends IOApp {
     val title = fullPage.selectFirst("div[data-id=heading-bar-title]").text()
     val (discipline, tournament) = title.splitAt(title.indexOf(". "))
 
-    val competitor1 = fullPage.selectFirst("div[data-id*=competitor-home]").text()
-    val competitor2 = fullPage.selectFirst("div[data-id*=competitor-away]").text()
+    val competitor1 = fullPage.selectFirst("span[data-id=competitor-home]").selectFirst("a").text()
+    val competitor2 = fullPage.selectFirst("span[data-id=competitor-away]").selectFirst("a").text()
 
-    val scores = Try {
-      fullPage
-        .selectFirst("div[data-id*=competitor-home]")
-        .parent()
-        .nextElementSibling()
-        .children()
-        .asScala
-        .toSeq
-        .map { mapScoreEl =>
-          mapScoreEl.children().asScala.toList.map(_.text()) match {
-            case map :: score1 :: score2 :: _ =>
-              Score(map, score1, score2)
-            case r                            =>
-              throw new Exception(s"match error 1 for scores fetch, failed to parse: $r")
-          }
-        }
-    }.orElse(Try {
-      fullPage
-        .selectFirst("div[data-id*=competitor-home]")
-        .parent()
-        .parent()
-        .nextElementSibling()
-        .children()
-        .asScala
-        .toList
-        .map(_.text()) match {
+    val scores = fullPage
+      .selectFirst("div[data-id=live-infoboard]")
+      .child(1)
+      .children()
+      .asScala
+      .toSeq
+      .map { mapScoreEl =>
+        mapScoreEl.children.text().split(" ").toList match {
           case map :: score1 :: score2 :: _ =>
-            Seq(Score(map, score1, score2))
+            Score(map, score1, score2)
           case r                            =>
-            throw new Exception(s"match error 2 for scores fetch, failed to parse: $r")
+            throw new Exception(s"match error 1 for scores fetch, failed to parse: $r")
         }
-    }).get
+      }
+
     val maybePageBetsEl = Option(fullPage.selectFirst("div[data-id=event-market-tabs-carousel]"))
 
     val pageBets = maybePageBetsEl.fold(Seq.empty[Bet]) { page =>
