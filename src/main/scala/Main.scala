@@ -50,15 +50,17 @@ object Main extends IOApp {
 
   def setupDriver(url: String, readinessCssSelector: String): IO[RemoteWebDriver] = for {
     drv <- IO {
-      System.setProperty("webdriver.chrome.driver", sys.env("CHROMEDRIVER"))
+      System.setProperty("webdriver.chrome.driver", sys.env("OPERA_DRIVER"))
 
       val chromeOptions = new ChromeOptions
-      chromeOptions.setBinary(sys.env("CHROME_BINARY"))
+      chromeOptions.setBinary(sys.env("OPERA_BINARY"))
       if (sys.env.get("HEADLESS").flatMap(_.toBooleanOption).getOrElse(true)) {
         chromeOptions.addArguments("--headless")
       }
       chromeOptions.addArguments("--disable-dev-shm-usage") // overcome limited resource problems
       chromeOptions.addArguments("--no-sandbox")
+      chromeOptions.addArguments("--remote-allow-origins=*")
+      chromeOptions.addArguments(s"user-data-dir=${sys.env("OPERA_PROFILE")}")
 
       val driver = new ChromeDriver(chromeOptions)
       driver.get(url)
