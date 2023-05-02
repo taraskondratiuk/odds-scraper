@@ -4,4 +4,4 @@ target
 .vscode
 .metals
 .bloop
-*.log
+LOG_FILES_DIR_IS_UNDEFINED
