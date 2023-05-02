@@ -17,3 +17,5 @@ need to set env vars
 `HEADLESS=false`(optional, true by default)
 
 `SPORTS=<comma separated sports>`
+
+or alternatively application.conf file can be edited
