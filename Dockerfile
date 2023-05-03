@@ -1,10 +1,10 @@
 FROM hseeberger/scala-sbt:8u312_1.6.2_3.1.1
 
-RUN mkdir pm-scraper-logs
+RUN mkdir odds-scraper-logs
 
-ADD . /pm-scraper/
+ADD . /odds-scraper/
 
-WORKDIR /pm-scraper
+WORKDIR /odds-scraper
 
 RUN apt-get update && \
     apt-get --assume-yes install chromium && \
@@ -14,7 +14,7 @@ ENV CHROME_BINARY /usr/bin/chromium
 
 ENV CHROMEDRIVER /usr/bin/chromedriver
 
-ENV LOG_FILES_DIR /pm-scraper-logs
+ENV LOG_FILES_DIR /odds-scraper-logs
 
 RUN sbt compile
 

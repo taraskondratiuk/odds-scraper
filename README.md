@@ -1,6 +1,6 @@
 # Deployment:
 ```
-docker build . -t pm-scraper && \
-docker run --name pm-scraper -v <path to logs>:/pm-scraper-logs --restart unless-stopped -d pm-scraper
+docker build . -t odds-scraper && \
+docker run --name odds-scraper -v <path to logs>:/odds-scraper-logs --restart unless-stopped -d odds-scraper
 ```
 app parameters can be edited in application.conf file

@@ -1,7 +1,7 @@
 lazy val root = project
   .in(file("."))
   .settings(
-    name := "pm-scraper",
+    name := "odds-scraper",
     version := "0.1.0",
 
     scalaVersion := "3.2.2",
