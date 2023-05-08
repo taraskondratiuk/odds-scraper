@@ -7,10 +7,10 @@ ADD . /odds-scraper/
 WORKDIR /odds-scraper
 
 RUN apt-get update && \
-    apt-get --assume-yes install chromium && \
+    apt-get --assume-yes install chromium-browser && \
     apt-get --assume-yes install chromium-driver
 
-ENV CHROME_BINARY /usr/bin/chromium
+ENV CHROME_BINARY /usr/bin/chromium-browser
 
 ENV CHROMEDRIVER /usr/bin/chromedriver
 
