@@ -6,11 +6,25 @@ ADD . /odds-scraper/
 
 WORKDIR /odds-scraper
 
-RUN apt-get update && \
-    apt-get --assume-yes install chromium-browser && \
-    apt-get --assume-yes install chromium-driver
+RUN apt-get update
 
-ENV CHROME_BINARY /usr/bin/chromium-browser
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+
+RUN apt -y install ./google-chrome-stable_current_amd64.deb
+
+RUN rm google-chrome-stable_current_amd64.deb
+
+RUN wget https://chromedriver.storage.googleapis.com/$(google-chrome --version | grep -oP "[0-9.]{10,20}")/chromedriver_linux64.zip
+
+RUN apt-get -y install zip
+
+RUN unzip chromedriver_linux64.zip
+
+RUN rm chromedriver_linux64.zip
+
+RUN mv chromedriver /usr/bin/chromedriver
+
+ENV CHROME_BINARY /opt/google/chrome/chrome
 
 ENV CHROMEDRIVER /usr/bin/chromedriver
 
