@@ -8,19 +8,9 @@ WORKDIR /odds-scraper
 
 RUN apt-get update
 
-RUN apt-get -y install software-properties-common
+RUN apt-get -y install firefox
 
-RUN add-apt-repository -y ppa:system76/pop
-
-RUN apt-get update
-
-RUN apt-get -y install chromium
-
-RUN apt-get -y install chromium-driver
-
-ENV CHROME_BINARY /usr/bin/chromium
-
-ENV CHROMEDRIVER /usr/bin/chromedriver
+ENV FIREFOX_BINARY /usr/bin/firefox
 
 ENV LOG_FILES_DIR /odds-scraper-logs
 

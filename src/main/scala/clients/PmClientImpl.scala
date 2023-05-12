@@ -19,7 +19,11 @@ class PmClientImpl(override val sports: Seq[String], override val baseUrl: Strin
 
   override val sportPageReadinessCssSelector: String = "div[data-id=event-card-container-event]"
 
-  override val eventReadinessCssSelector: String = "div[data-id=heading-bar-title]"
+  override val eventReadinessCssSelector: String = "div[data-id=card-scoreboard]"
+
+  override def generateEventsUrl(sportName: String): String = {
+    s"$baseUrl/en/$sportName/live"
+  }
 
   override def postEventPageOpenMethod(driver: RemoteWebDriver): IO[Unit] = {
     IO {
@@ -32,13 +36,9 @@ class PmClientImpl(override val sports: Seq[String], override val baseUrl: Strin
         .foreach(_.click())
       driver.findElement(By.cssSelector("div[data-id=event-markets-tab-0]")).click()
       driver
-        .findElements(By.cssSelector("svg"))
+        .findElement(By.cssSelector("div[id=line-holder]"))
+        .findElements(By.cssSelector("img[alt=UII_ExpandMore]"))
         .asScala
-        .filter(svg => svg
-          .findElements(By.cssSelector("use"))
-          .asScala
-          .exists(_.getAttribute("xlink:href") == "#UII_ExpandMore")
-        )
         .foreach(_.click())
     }.handleError(e => log.warn("failed to expand coefs: ", e))
   }
@@ -55,15 +55,18 @@ class PmClientImpl(override val sports: Seq[String], override val baseUrl: Strin
   override def fetchEventCoefs(driver: RemoteWebDriver, sportName: String): IO[EventCoefs] = IO {
     val fullPage = Jsoup.parse(driver.findElement(By.ById("root")).getAttribute("innerHTML"))
 
-    val title = fullPage.selectFirst("div[data-id=heading-bar-title]").text()
-    val (discipline, tournament) = title.splitAt(title.indexOf(". "))
+    val titleArr = fullPage.selectFirst("li[data-id=breadcrumb-ongoing-tournament]").text().split(". ")
+    val (discipline, tournament) = (titleArr(0), titleArr(1))
 
-    val competitor1 = fullPage.selectFirst("span[data-id=competitor-home]").selectFirst("a").text()
-    val competitor2 = fullPage.selectFirst("span[data-id=competitor-away]").selectFirst("a").text()
+    val competitorsArr = fullPage
+      .selectFirst("li[data-id=breadcrumb-ongoing-event]").selectFirst("h1").text().split(" - ")
+    val (competitor1, competitor2) = (competitorsArr(0), competitorsArr(1))
 
     val scores = fullPage
-      .selectFirst("div[data-id=live-infoboard]")
+      .selectFirst("div[data-id=event-scoreboard]")
       .child(1)
+      .child(0)
+      .child(0)
       .children()
       .asScala
       .toSeq
@@ -116,11 +119,11 @@ class PmClientImpl(override val sports: Seq[String], override val baseUrl: Strin
     EventCoefs(
       sportName,
       discipline,
-      tournament.replace(". ", ""),
+      tournament,
       competitor1,
-      competitor2,
-      pageBets,
+      competitor2, //fixed
       scores,
+      pageBets,
     )
   }
 }
