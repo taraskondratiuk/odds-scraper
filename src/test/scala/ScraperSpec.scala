@@ -23,13 +23,16 @@ class ScraperSpec extends AnyFlatSpec {
     assert(isPageLoaded)
   }
 
-  "Selenium" should "extract coefs" in {
+  "Scraper" should "extract pm coefs" in {
     val driverClient = new FirefoxWebDriverImpl(cfg.firefoxBinary, cfg.headless)
     val pmClient = new PmClientImpl(Seq("football"), cfg.bookies.find(_.name == "pm").get.baseUrl)
 
     val res = for {
-      driverMainPage <- pmClient
-        .setupDriver(s"${pmClient.baseUrl}/en/${pmClient.sports.head}/live", pmClient.sportPageReadinessCssSelector, driverClient)
+      driverMainPage <- pmClient.setupDriver(
+        s"${pmClient.baseUrl}/en/${pmClient.sports.head}/live",
+        pmClient.sportPageReadinessCssSelector,
+        driverClient,
+      )
       _              = println("=======step 1")     
       eventUrl       <- pmClient.getLiveEventsUrls(driverMainPage).map(_.head)
       _              = println("=======step 2")
