@@ -7,7 +7,7 @@ import org.openqa.selenium.{By, Cookie}
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.jdk.CollectionConverters.*
+import scala.jdk.CollectionConverters.ListHasAsScala
 
 class PmClientImpl(override val sports: Seq[String], override val baseUrl: String) extends BookieClient {
 
@@ -121,7 +121,7 @@ class PmClientImpl(override val sports: Seq[String], override val baseUrl: Strin
       discipline,
       tournament,
       competitor1,
-      competitor2, //fixed
+      competitor2,
       scores,
       pageBets,
     )

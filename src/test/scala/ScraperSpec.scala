@@ -2,7 +2,6 @@ import app.Main
 import app.Main.Config
 import cats.effect.unsafe.implicits.global
 import clients.{FirefoxWebDriverImpl, PmClientImpl}
-import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
 import org.scalatest.flatspec.AnyFlatSpec
 import cats.effect.IO
 

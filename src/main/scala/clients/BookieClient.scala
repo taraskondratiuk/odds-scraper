@@ -3,11 +3,10 @@ package clients
 import models.Models.EventCoefs
 import app.Main.ParMap
 import cats.effect.IO
-import cats.implicits.*
+import cats.implicits.catsSyntaxParallelSequence1
 import io.circe.syntax.EncoderOps
-import io.circe.generic.auto.*
-import org.openqa.selenium.{By, Cookie}
-import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxOptions}
+import io.circe.generic.auto.deriveEncoder
+import org.openqa.selenium.By
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.WebDriverWait
 import org.slf4j.Logger

@@ -1,24 +1,13 @@
 package app
 
 import cats.effect.{ExitCode, IO, IOApp}
-import cats.implicits.*
+import cats.implicits.{catsSyntaxParallelSequence1, toTraverseOps}
 import clients.{BookieClient, FirefoxWebDriverImpl, PmClientImpl}
 import io.circe.config
-import io.circe.generic.auto.*
-import io.circe.syntax.*
-import models.Models.{Bet, EventCoefs, Outcome, Score}
-import org.jsoup.Jsoup
-import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
-import org.openqa.selenium.remote.RemoteWebDriver
-import org.openqa.selenium.support.ui.WebDriverWait
-import org.openqa.selenium.{By, Cookie, WebDriver}
-import org.slf4j.{Logger, LoggerFactory}
+import io.circe.generic.auto.deriveDecoder
 
-import java.time.Duration
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.duration.DurationInt
-import scala.jdk.CollectionConverters.*
-import scala.util.Try
 
 object Main extends IOApp {
 
@@ -35,7 +24,7 @@ object Main extends IOApp {
   }
 
   override def run(args: List[String]): IO[ExitCode] = for {
-    cfg                              <- parseConfig
+    cfg: Config                      <- parseConfig
     bookieClients: Seq[BookieClient] = cfg.bookies.map {
       c => c.name match {
         case "pm" =>
